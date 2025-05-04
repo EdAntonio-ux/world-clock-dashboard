@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>World Clock Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --text: #2e2e2e;
+      --accent: #3b82f6;
+      --border: #e5e7eb;
+      --card: #f0f0f3;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+
+    .site-header {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      color: white;
+      padding: 50px 20px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .site-header h1 {
+      font-size: 2.4rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .site-header .subheading {
+      font-size: 1.1rem;
+      color: #dbeafe;
+      margin-top: 8px;
+    }
+
+    #toggle-theme {
+      margin-top: 16px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      background: white;
+      color: #333;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #timezone-selector {
+      margin: 30px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .timezone-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      justify-items: center;
+    }
+
+    .timezone-select {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: white;
+      min-width: 200px;
+    }
+
+    #clocks {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .clock {
+      border: 1px solid var(--border);
+      padding: 20px;
+      border-radius: 16px;
+      width: 200px;
+      text-align: center;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .clock:hover {
+      transform: scale(1.03);
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    .flag {
+      width: 32px;
+      height: 24px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .city {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 5px;
+      color: var(--accent);
+    }
+
+    .greeting {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    .date {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .time {
+      font-size: 1.25rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    body.dark {
+      --bg: #121212;
+      --text: #f3f4f6;
+      --card: #1e1e1e;
+    }
+
+    body.dark .site-header {
+      background: linear-gradient(to right, #1f2937, #111827);
+    }
+
+    body.dark .timezone-select {
+      background-color: #1e1e1e;
+      color: #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-content">
+      <h1>🌍 World Clock Dashboard</h1>
+      <p class="subheading">Track time zones from around the world in real-time</p>
+      <button id="toggle-theme">Toggle Dark Mode</button>
+    </div>
+  </header>
+
+  <section id="timezone-selector">
+    <div class="timezone-grid">
+      <label for="timezone-1">Timezone 1</label>
+      <select class="timezone-select" id="timezone-1"></select>
+      <label for="timezone-2">Timezone 2</label>
+      <select class="timezone-select" id="timezone-2"></select>
+      <label for="timezone-3">Timezone 3</label>
+      <select class="timezone-select" id="timezone-3"></select>
+      <label for="timezone-4">Timezone 4</label>
+      <select class="timezone-select" id="timezone-4"></select>
+    </div>
+  </section>
+
+  <section id="clocks"></section>
+
+  <section id="contact" style="padding: 40px 20px; text-align: center; background: var(--bg);">
+    <h2 style="font-size: 1.25rem; margin-bottom: 16px; color: var(--accent);">Contact Me</h2>
+    <form action="https://formspree.io/f/xkgrjlyb" method="POST" onsubmit="return handleFormSubmit(event)" style="max-width: 400px; margin: 0 auto;">
+      <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid var(--border); font-size: 1rem;">
+      <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid var(--border); font-size: 1rem;">
+      <textarea name="message" placeholder="Your Message" required rows="4" style="width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid var(--border); font-size: 1rem;"></textarea>
+      <button type="submit" style="padding: 10px 20px; background-color: var(--accent); color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer;">Send</button>
+    </form>
+    <p id="form-message" style="margin-top: 15px; font-size: 0.95rem; color: var(--accent);"></p>
+  </section>
+
+  <script>
+    const greetings = [
+      { hour: 5, text: "Good morning" },
+      { hour: 12, text: "Good afternoon" },
+      { hour: 17, text: "Good evening" },
+      { hour: 21, text: "Good night" }
+    ];
+
+    function getGreeting(hour) {
+      for (let i = greetings.length - 1; i >= 0; i--) {
+        if (hour >= greetings[i].hour) return greetings[i].text;
+      }
+      return "Hello";
+    }
+
+    function getDateString(tz) {
+      const options = { weekday: 'long', month: 'long', day: 'numeric' };
+      return new Intl.DateTimeFormat('en-US', { timeZone: tz, ...options }).format(new Date());
+    }
+
+    const timeZones = [
+      { label: "UTC-12 – Eniwetok", tz: "Etc/GMT+12", flag: "us" },
+      { label: "UTC-11 – Samoa", tz: "Pacific/Pago_Pago", flag: "ws" },
+      { label: "UTC-10 – Hawaii", tz: "Pacific/Honolulu", flag: "us" },
+      { label: "UTC-9 – Alaska", tz: "America/Anchorage", flag: "us" },
+      { label: "UTC-8 – PST, Pacific US", tz: "America/Los_Angeles", flag: "us" },
+      { label: "UTC-7 – MST, PDT", tz: "America/Denver", flag: "us" },
+      { label: "UTC-6 – CST, MDT", tz: "America/Chicago", flag: "us" },
+      { label: "UTC-5 – EST, CDT", tz: "America/New_York", flag: "us" },
+      { label: "UTC-4 – Atlantic, Canada", tz: "America/Halifax", flag: "ca" },
+      { label: "UTC-3 – Brazil, Buenos Aires", tz: "America/Argentina/Buenos_Aires", flag: "ar" },
+      { label: "UTC-2 – Mid-Atlantic", tz: "Etc/GMT+2", flag: "pt" },
+      { label: "UTC-1 – Cape Verdes", tz: "Atlantic/Cape_Verde", flag: "cv" },
+      { label: "UTC – GMT, Dublin", tz: "Europe/Dublin", flag: "ie" },
+      { label: "UTC+1 – Berlin, Rome", tz: "Europe/Berlin", flag: "de" },
+      { label: "UTC+2 – Israel, Cairo", tz: "Africa/Cairo", flag: "eg" },
+      { label: "UTC+3 – Moscow, Kuwait", tz: "Europe/Moscow", flag: "ru" },
+      { label: "UTC+4 – Abu Dhabi, Muscat", tz: "Asia/Dubai", flag: "ae" },
+      { label: "UTC+5 – Islamabad, Karachi", tz: "Asia/Karachi", flag: "pk" },
+      { label: "UTC+6 – Almaty, Dhaka", tz: "Asia/Dhaka", flag: "bd" },
+      { label: "UTC+7 – Bangkok, Jakarta", tz: "Asia/Bangkok", flag: "th" },
+      { label: "UTC+8 – Hong Kong, Beijing", tz: "Asia/Shanghai", flag: "cn" },
+      { label: "UTC+9 – Tokyo, Osaka", tz: "Asia/Tokyo", flag: "jp" },
+      { label: "UTC+10 – Sydney, Melbourne", tz: "Australia/Sydney", flag: "au" },
+      { label: "UTC+11 – Magadan, Solomon Is.", tz: "Asia/Magadan", flag: "ru" },
+      { label: "UTC+12 – Fiji, Wellington, Auckland", tz: "Pacific/Auckland", flag: "nz" }
+    ];
+
+    const selectedTimeZones = ["America/Los_Angeles", "Europe/Berlin", "Asia/Shanghai", "Asia/Tokyo"];
+    const timezoneSelects = document.querySelectorAll('.timezone-select');
+    const clocksContainer = document.getElementById('clocks');
+
+    function populateDropdowns() {
+      timezoneSelects.forEach((select, i) => {
+        select.innerHTML = '';
+        timeZones.forEach(({ label, tz }) => {
+          const option = document.createElement('option');
+          option.value = tz;
+          option.textContent = label;
+          if (selectedTimeZones[i] === tz) option.selected = true;
+          select.appendChild(option);
+        });
+
+        select.onchange = (e) => {
+          selectedTimeZones[i] = e.target.value;
+          renderClocks();
+        };
+      });
+    }
+
+    function renderClocks() {
+      clocksContainer.innerHTML = '';
+      selectedTimeZones.forEach(tz => {
+        const zone = timeZones.find(z => z.tz === tz);
+        const label = zone?.label || tz;
+        const flag = zone?.flag || "world";
+        const now = new Date().toLocaleString("en-US", { timeZone: tz });
+        const hour = new Date(now).getHours();
+        const greeting = getGreeting(hour);
+        const dateStr = getDateString(tz);
+
+        const clockDiv = document.createElement('div');
+        clockDiv.className = 'clock';
+        clockDiv.innerHTML = `
+          <img class="flag" src="https://flagcdn.com/32x24/${flag}.png" alt="${flag} flag">
+          <div class="city">${label}</div>
+          <div class="greeting">${greeting}</div>
+          <div class="date">${dateStr}</div>
+          <div class="time" data-tz="${tz}">--:--:--</div>
+        `;
+        clocksContainer.appendChild(clockDiv);
+      });
+    }
+
+    function updateClocks() {
+      const now = new Date();
+      document.querySelectorAll('.time').forEach(el => {
+        const tz = el.dataset.tz;
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+          timeZone: tz
+        });
+        el.textContent = formatter.format(now);
+      });
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+      const data = new FormData(form);
+
+      fetch(form.action, {
+        method: form.method,
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      }).then(response => {
+        const msg = document.getElementById('form-message');
+        if (response.ok) {
+          msg.textContent = "✅ Thank you! Your message has been sent.";
+          form.reset();
+        } else {
+          msg.textContent = "⚠️ Something went wrong. Please try again.";
+        }
+      }).catch(() => {
+        document.getElementById('form-message').textContent = "⚠️ Network error. Please try again later.";
+      });
+      return false;
+    }
+
+    document.getElementById('toggle-theme').addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
+
+    populateDropdowns();
+    renderClocks();
+    setInterval(updateClocks, 1000);
+    updateClocks();
+  </script>
+</body>
+</html>
